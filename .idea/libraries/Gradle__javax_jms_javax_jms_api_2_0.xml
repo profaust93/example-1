@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: javax.jms:javax.jms-api:2.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/javax.jms/javax.jms-api/2.0/cda766292e16077da794020ecc3fcde9273acb8f/javax.jms-api-2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/javax.jms/javax.jms-api/2.0/a9535e0aec788d2b20137e217edf1a0524d6d1e7/javax.jms-api-2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
