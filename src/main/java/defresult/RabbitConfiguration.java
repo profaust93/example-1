@@ -1,8 +1,7 @@
 package defresult;
 
 import org.apache.log4j.Logger;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -15,8 +14,7 @@ public class RabbitConfiguration {
     //настраиваем соединение с RabbitMQ
     @Bean
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory =
-                new CachingConnectionFactory("localhost");
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
         return connectionFactory;
     }
 
@@ -31,15 +29,7 @@ public class RabbitConfiguration {
     }
 
     //объявляем очередь с именем queue1
-    @Bean
-    public Queue myQueue1() {
-        return new Queue("queue1");
-    }
 
-    @Bean
-    public Queue myQueue2() {
-        return new Queue("queue2");
-    }
 //    //объявляем контейнер, который будет содержать листенер для сообщений
 //    @Bean
 //    public SimpleMessageListenerContainer messageListenerContainer1() {

@@ -1,11 +1,10 @@
 package defresult;
 
 import org.apache.log4j.Logger;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.support.CorrelationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import javax.jms.QueueReceiver;
+import javax.annotation.Resource;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Controller
 public class SampleController {
@@ -29,6 +26,10 @@ public class SampleController {
     RabbitTemplate template;
 
     Integer count = 0;
+
+    @Resource(name = "receivedMessages")
+    ConcurrentHashMap<String, Object> receivedMessages;
+
 
 
     @RequestMapping("/emit")
@@ -50,16 +51,23 @@ public class SampleController {
 
         String corrId = UUID.randomUUID().toString();    //count.toString();
         logger.info("Sending key: " + corrId);
-        Message message = MessageBuilder.withBody(msg.getBytes()).setCorrelationId(corrId.getBytes()).build();
-        template.convertAndSend("queue1", message);
+        CorrelationData correlationData = new CorrelationData(corrId);
+        template.convertAndSend("toSecureApp", "*", msg, correlationData);
         count++;
         return corrId;
     }
 
-    Message receiveMsg(String correlationId) {
-//        System.out.println("Size: " + listener.getMap().size() + " Content: " + new String(listener.getMap().get(correlationId).getBody()));
-
-        return RabbitMqListener.map.get(correlationId);
+    Object receiveMsg(String correlationId){
+        while (true){
+              if (receivedMessages.containsKey(correlationId)){
+                  return receivedMessages.get(correlationId);
+              }
+              try {
+                  TimeUnit.MILLISECONDS.sleep(10);
+              } catch (InterruptedException e){
+                  Thread.interrupted();
+              }
+        }
     }
 
 
