@@ -39,13 +39,10 @@ public class SampleController {
     @ResponseBody
     DeferredResult<ResponseEntity<Object>> queue1() throws InterruptedException, ExecutionException, TimeoutException {
         DeferredResult response = new DeferredResult();
-        Object fromService = CompletableFuture
-                .supplyAsync(this::sendMsg)
-                .thenAcceptAsync(this::receiveMsg)
-                .get(30, TimeUnit.SECONDS);
-        String answer = (String)fromService;
+        String id = sendMsg();
+        String answer = (String) receiveMsg(id);
         System.out.println("ANSWER: " + answer);
-        response.setResult(new ResponseEntity<>(fromService, HttpStatus.OK));
+        response.setResult(new ResponseEntity<>(answer, HttpStatus.OK));
         return response;
     }
 
