@@ -32,7 +32,7 @@ public class SecureAppListener {
     @RabbitListener(queues = "toSecureAppQ")
     public void onMessage(Message message) {
         executor.submit(() -> {
-            String correlationid = message.getMessageProperties().getCorrelationIdString();
+            String correlationid = new String(message.getMessageProperties().getCorrelationId());
             String response = service.method(new String(message.getBody()));
             CorrelationData correlationData = new CorrelationData(correlationid);
             template.convertAndSend("toApiApp", "*", response, correlationData);

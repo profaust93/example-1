@@ -25,9 +25,9 @@ public class ApiAppListener {
     @Resource(name = "receivedMessages")
     ConcurrentHashMap<String, Object> receivedMessages;
 
-    @RabbitListener
+    @RabbitListener(queues = "toApiAppQ")
     public void onMessage(Message message){
-        String id = message.getMessageProperties().getCorrelationIdString();
+        String id = new String(message.getMessageProperties().getCorrelationIdString());
         receivedMessages.put(id, message.getBody());
     }
 
