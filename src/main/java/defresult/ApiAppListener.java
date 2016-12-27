@@ -1,10 +1,10 @@
 package defresult;
 
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.Message;
 
 import javax.annotation.Resource;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,9 +26,9 @@ public class ApiAppListener {
     ConcurrentHashMap<String, Object> receivedMessages;
 
     @RabbitListener(queues = "toApiAppQ")
-    public void onMessage(Message message){
-        String id = new String(message.getMessageProperties().getCorrelationIdString());
-        receivedMessages.put(id, message.getBody());
+    public void onMessage(Message<String> message){
+        String id = (String) message.getHeaders().get("correlationId");
+        receivedMessages.put(id, message.getPayload());
     }
 
 }

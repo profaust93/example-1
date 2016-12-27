@@ -1,19 +1,22 @@
 package defresult;
 
 import org.apache.log4j.Logger;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.support.CorrelationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -39,7 +42,7 @@ public class SampleController {
         Object fromService = CompletableFuture
                 .supplyAsync(this::sendMsg)
                 .thenAcceptAsync(this::receiveMsg)
-                .get(3, TimeUnit.SECONDS);
+                .get(30, TimeUnit.SECONDS);
         String answer = (String)fromService;
         System.out.println("ANSWER: " + answer);
         response.setResult(new ResponseEntity<>(fromService, HttpStatus.OK));
@@ -52,7 +55,10 @@ public class SampleController {
         String corrId = UUID.randomUUID().toString();    //count.toString();
         logger.info("Sending key: " + corrId);
         CorrelationData correlationData = new CorrelationData(corrId);
-        template.convertAndSend("toSecureApp", "*", msg, correlationData);
+        Map<String, Object> header = new HashMap<>();
+        header.put("correlationId", corrId);
+        Message<String> message = new GenericMessage(msg, header);
+        template.convertAndSend("toSecureApp", "*", message);
         count++;
         return corrId;
     }

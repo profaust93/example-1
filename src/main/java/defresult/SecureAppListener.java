@@ -1,18 +1,19 @@
 package defresult;
 
 import org.apache.log4j.Logger;
-import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.support.CorrelationData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 @EnableRabbit //нужно для активации обработки аннотаций @RabbitListener
@@ -30,12 +31,15 @@ public class SecureAppListener {
     SecureAppService service;
 
     @RabbitListener(queues = "toSecureAppQ")
-    public void onMessage(Message message) {
+    public void onMessage(Message<String> message) {
         executor.submit(() -> {
-            String correlationid = new String(message.getMessageProperties().getCorrelationId());
-            String response = service.method(new String(message.getBody()));
-            CorrelationData correlationData = new CorrelationData(correlationid);
-            template.convertAndSend("toApiApp", "*", response, correlationData);
+            String correlationid = (String) message.getHeaders().get("correlationId");
+            String response = service.method((String) message.getPayload());
+            logger.info(response);
+            Map<String, Object> header = new HashMap<>();
+            header.put("correlationId", correlationid);
+            Message responseMessage = new GenericMessage(response, header);
+            template.convertAndSend("toApiApp", "*", responseMessage);
         });
     }
 }
